@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>晨光旅游-搜索</title>
+    <link rel="stylesheet" type="text/css" href="css/common.css">
+    <link rel="stylesheet" href="css/search.css">
+    <script src="js/jquery-3.3.1.js"></script>
+    <script src="js/getParameter.js"></script>
+    <script>
+        function loadPage(currentPage,cid,rname){
+            //点击页码，请求route/pageQuery  刷新数据
+            console.log(currentPage);
+            $.get("route/pageQuery",{cid:cid,currentPage:currentPage,rname:rname},function (pageBean) {
+
+                // private int TotalPage;      //总页数
+                // private int TotalCount;     //总记录数
+                // private int PageSize;       //每页显示的记录数
+                // private int CurrentPage;    //当前页数
+                // private List<T> list;       //每页的数据
+                console.log(pageBean);
+                var totalPage = pageBean.totalPage;
+                var totalCount = pageBean.totalCount;
+                var pageSize = pageBean.pageSize;
+                var currentPage = pageBean.currentPage;
+                var list = pageBean.list;
+                console.log(list);
+
+                //分页工具条展示
+                $("#totalPage").html(totalPage);
+                $("#totalCount").html(totalCount);
+
+                var lis='';
+                var firstli='<li onclick="javascript:loadPage('+1+','+cid+')"><a href="#">首页</a></li>';
+                var lastli='<li class="threeword" onclick="javascript:loadPage('+totalPage+','+cid+')"><a href="#">末页</a></li>';
+                // var nextli='<li class="threeword" onclick="javascript:loadPage('+(i+1)<=totalPage?i+1:i+','+cid+')"><a href="#">下一页</a></li>'; //'+(i+1)<=totalPage?i+1:i+','+cid+'
+                // var beforeli='<li class="threeword" onclick="javascript:loadPage('+(i-1)>0?i-1:1+','+cid+')"><a href="#">上一页</a></li>';
+                var pb=(currentPage-1)<1?currentPage:currentPage-1;
+                var pn=(currentPage+1)>totalPage?currentPage:currentPage+1;
+                var nextli='<li class="threeword" onclick="javascript:loadPage('+(currentPage+1)+','+cid+')"><a href="#">下一页</a></li>';
+                var beforeli='<li class="threeword" onclick="javascript:loadPage('+(currentPage-1)+','+cid+')"><a href="#">上一页</a></li>';
+                lis+=firstli+nextli;
+                console.log(currentPage);
+                //只显示10页 前5后4
+                var pagenum=1;
+                if(currentPage>5){
+                    pagenum=currentPage-5;
+                }
+                for(var i=pagenum;i<=totalPage&&i<pagenum+10;i++){
+
+                    if(i==currentPage){
+                        lis+='<li class="curPage" onclick="javascript:loadPage('+i+','+cid+')"><a href="#">'+i+'</a></li>'; //javascript:loadPage('+i+','+cid+');
+                    }else{
+                        lis+='<li onclick="javascript:loadPage('+i+','+cid+')"><a href="#">'+i+'</a></li>'; //javascript:loadPage('+i+','+cid+');
+                    }
+
+
+                }
+                lis+=beforeli+lastli;
+                $("#pageNum").html(lis);
+
+                //展示数据
+                var routelis=''; //javascript
+                for(var i=0;i<list.length;i++){
+                    routelis+='<li>'+
+                        '               <div class="img">' +
+                        '                   <img src="'+list[i].rimage+'" style="width: 299px;">' +
+                        '               </div>\n' +
+                        '                <div class="text1">\n' +
+                        '                    <p>'+list[i].rname+'</p>\n' +
+                        '                    <br/>\n' +
+                        '                   <p>'+list[i].routeIntroduce+'</p>\n' +
+                        '                </div>\n' +
+                        '                <div class="price">\n' +
+                        '                    <p class="price_num">\n' +
+                        '                    <span>&yen;</span>\n' +
+                        '                   <span>'+list[i].price+'</span>\n' +
+                        '                   <span>起</span>\n' +
+                        '                   </p>\n' +
+                        '                <p><a href="route_detail.html">查看详情</a></p>\n' +
+                        '               </div>\n' +
+                        '       </li>';
+                }
+                $("#routeContext").html(routelis);
+                window.scrollTo(0,0);//定位到 0 0点
+            });
+        }
+        $(function () {
+            var search = location.search;  //地址
+            // var cid = search.split("=")[1];   //地址按等号切割取得cid
+            var cid = getParameter("cid");
+            var rname = getParameter("rname");
+            loadPage(1,cid,rname);
+
+
+            /*//ajax 发送请求,请求route/PageQuery,传递cid
+            $.get("route/pageQuery",{cid:cid},function (pageBean) {
+                // private int TotalPage;      //总页数
+                // private int TotalCount;     //总记录数
+                // private int PageSize;       //每页显示的记录数
+                // private int CurrentPage;    //当前页数
+                // private List<T> list;       //每页的数据
+
+
+                var totalPage = pageBean.totalPage;
+                var totalCount = pageBean.totalCount;
+                var pageSize = pageBean.totalCount;
+                var currentPage = pageBean.totalCount;
+                var list = pageBean.list;
+                // console.log(list);
+
+                //分页工具条展示
+                $("#totalPage").html(totalPage);
+                $("#totalCount").html(totalCount);
+
+                var lis='';
+                var firstli='<li><a href="">首页</a></li>';
+                var lastli='<li class="threeword"><a href="javascript:;">末页</a></li>';
+                var nextli='<li class="threeword"><a href="javascript:;">下一页</a></li>';
+                var beforeli='<li class="threeword"><a href="#">上一页</a></li>';
+
+                lis+=firstli+nextli;
+
+                for(var i=1;i<=totalPage;i++){
+                    lis+='<li onclick="javascript:loadPage('+i+','+cid+')"><a href="#">'+i+'</a></li>';
+                }
+                lis+=beforeli+lastli;
+                $("#pageNum").html(lis);
+
+                //展示数据
+                var routelis='';
+                for(var i=0;i<list.length;i++){
+                    routelis+='<li>'+
+                        '               <div class="img">' +
+                        '                   <img src="'+list[i].rimage+'" style="width: 299px;">' +
+                        '               </div>\n' +
+                        '                <div class="text1">\n' +
+                        '                    <p>'+list[i].rname+'</p>\n' +
+                        '                    <br/>\n' +
+                        '                   <p>'+list[i].routeIntroduce+'</p>\n' +
+                        '                </div>\n' +
+                        '                <div class="price">\n' +
+                        '                    <p class="price_num">\n' +
+                        '                    <span>&yen;</span>\n' +
+                        '                   <span>'+list[i].price+'</span>\n' +
+                        '                   <span>起</span>\n' +
+                        '                   </p>\n' +
+                        '                <p><a href="route_detail.html">查看详情</a></p>\n' +
+                        '               </div>\n' +
+                        '       </li>';
+                }
+                $("#routeContext").html(routelis);*/
+        });
+    </script>
+</head>
+<body>
+<!--引入头部-->
+<div id="header"></div>
+    <div class="page_one">
+        <div class="contant">
+            <div class="crumbs">
+                <img src="images/search.png" alt="">
+                <p>晨光旅行><span>搜索结果</span></p>
+            </div>
+            <div class="xinxi clearfix">
+                <div class="left">
+                    <div class="header">
+                        <span>商品信息</span>
+                        <span class="jg">价格</span>
+                    </div>
+                    <ul id="routeContext">
+
+                    </ul>
+                    <div class="page_num_inf">
+                        <i></i> 共
+                        <span id="totalPage"></span>页<span id="totalCount"></span>条
+                    </div>
+                    <div class="pageNum">
+                        <ul id="pageNum">
+
+                        </ul>
+                    </div>
+                </div>
+                <div class="right">
+                    <div class="top">
+                        <div class="hot">HOT</div>
+                        <span>热门推荐</span>
+                    </div>
+                    <ul>
+                        <li>
+                            <div class="left"><img src="images/04-search_09.jpg" alt=""></div>
+                            <div class="right">
+                                <p>清远新银盏温泉度假村酒店/自由行套...</p>
+                                <p>网付价<span>&yen;<span>899</span>起</span>
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="left"><img src="images/04-search_09.jpg" alt=""></div>
+                            <div class="right">
+                                <p>清远新银盏温泉度假村酒店/自由行套...</p>
+                                <p>网付价<span>&yen;<span>899</span>起</span>
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="left"><img src="images/04-search_09.jpg" alt=""></div>
+                            <div class="right">
+                                <p>清远新银盏温泉度假村酒店/自由行套...</p>
+                                <p>网付价<span>&yen;<span>899</span>起</span>
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="left"><img src="images/04-search_09.jpg" alt=""></div>
+                            <div class="right">
+                                <p>清远新银盏温泉度假村酒店/自由行套...</p>
+                                <p>网付价<span>&yen;<span>899</span>起</span>
+                                </p>
+                            </div>
+                        </li>
+                        <li>
+                            <div class="left"><img src="images/04-search_09.jpg" alt=""></div>
+                            <div class="right">
+                                <p>清远新银盏温泉度假村酒店/自由行套...</p>
+                                <p>网付价<span>&yen;<span>899</span>起</span>
+                                </p>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!--引入头部-->
+    <div id="footer"></div>
+    <!--导入布局js，共享header和footer-->
+    <script type="text/javascript" src="js/include.js"></script>
+</body>
+
+</html>
